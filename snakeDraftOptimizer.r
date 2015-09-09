@@ -92,8 +92,8 @@ currteam =  data.frame(qb = nrow(subset(teampool, position == "QB")),
 if(globalDRAFT == "STARTERS") {
   constraints = data.frame(qb = 1, rb = 3, wr = 3, rec = 5,
                                    te = 1, d = 1, pk = 1, starter = 9,
-                                   risk = 45)
-  const.dir = c(rep("<=",6), "==", "<=", "<=")
+                                   risk = 43)
+  const.dir = c("==", rep("<=",3), rep("==", 4), "<=")
   } else {
   ## to draft bench, increase risk tolerance to maximize points
   constraints = data.frame(qb = 3, rb = 6, wr = 6, rec = 12, te = 2, 
