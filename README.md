@@ -1,4 +1,5 @@
 # FantasyFootballR
 Place to store my fantasy football scripts
 
-SnakeDraftOptimizer.r - linear optimizer for a snake draft
+## Script Descriptions
+__SnakeDraftOptimizer.r__ - linear optimizer for a snake draft
