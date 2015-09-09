@@ -11,8 +11,8 @@ library(Rglpk)
 source("/Users/egoodwin/Documents/active/code/R/fantasyFootball/draftinit.r")
 
 ## are we drafting starters or bench players?
-#globalDRAFT = "STARTERS"
-globalDRAFT = "BENCH"
+globalDRAFT = "STARTERS"
+# globalDRAFT = "BENCH"
 
 #globalCONNECT = "CSV"
 globalCONNECT = "DB"
@@ -23,11 +23,9 @@ dbPullData = function() {
                  user = db.user,
                  password = db.password,
                  host = db.host,
-                 dbname=db.name)
+                 dbname = db.name)
 
   ## filter out all team IDs
-  draftpool = suppressWarnings(dbGetQuery(conn = con, 
-                                        statement = stmt))
   ## retrieve all undrafted players
   stmt = "SELECT * FROM projections WHERE draftstatus=\"0\""
   draftpool = suppressWarnings(dbGetQuery(conn = con, 
@@ -84,7 +82,7 @@ currteam =  data.frame(qb = nrow(subset(teampool, position == "QB")),
 
 ## set team constraints
 ## QB = 1; RB = 2; RB/WR = 1; WR = 2; TE = 1;
-## D/ST = 1; PK = 1; BE = 7
+## DST = 1; PK = 1; BE = 7
 # qb.max = 4, rb.max = 8,
 # wr.max = 8, te.max = 3,
 # d.max = 3, pk.max = 3
@@ -94,7 +92,7 @@ currteam =  data.frame(qb = nrow(subset(teampool, position == "QB")),
 if(globalDRAFT == "STARTERS") {
   constraints = data.frame(qb = 1, rb = 3, wr = 3, rec = 5,
                                    te = 1, d = 1, pk = 1, starter = 9,
-                                   risk = 50)
+                                   risk = 45)
   const.dir = c(rep("<=",6), "==", "<=", "<=")
   } else {
   ## to draft bench, increase risk tolerance to maximize points
@@ -118,7 +116,7 @@ draftpool$starter = 1
 ## set nulls equal to default risk
 draftpool$risk[draftpool$risk == "null"] = 5
 draftpool$risk = as.numeric(draftpool$risk)
-
+draftpool$pointworth = draftpool$points - draftpool$vor
 const.matrix = rbind(as.numeric(draftpool$qb), 
                      as.numeric(draftpool$rb), 
                      as.numeric(draftpool$wr),
@@ -151,7 +149,7 @@ var.types = rep("B", length(draftpool$points))
 sol <- Rglpk_solve_LP(obj = objective, mat = const.matrix, dir = const.dir,
                       rhs = rhs, types = var.types, max = TRUE)
 sol
-draftpool[sol$solution>=1,c(2,3,5,6,7,10,11,15,23)]
+draftpool[sol$solution>=1,c(2,3,5,6,7,10,11,15,23,33)]
 
-sum(draftpool[sol$solution>=1,c(2,3,5,6,7,10,11,15,23)]$risk) + sum(teampool$risk)
-sum(draftpool[sol$solution>=1,c(2,3,5,6,7,10,11,15,23)]$points) + sum(teampool$points)
+sum(draftpool[sol$solution>=1,]$risk) + sum(teampool$risk)
+sum(draftpool[sol$solution>=1,]$points) + sum(teampool$points)
